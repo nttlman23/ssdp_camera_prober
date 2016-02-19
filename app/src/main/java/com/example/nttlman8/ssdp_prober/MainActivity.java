@@ -132,19 +132,23 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
 
-            if (result.equals("Not found")) {
+            if (result.equals("Not found") ||
+                    result.equals("No connection") ||
+                    result.equals("No wi-fi connection")) {
                 Log.d(TAG, result);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         result, Toast.LENGTH_LONG);
                 toast.show();
+            } else {
+
+                tvName.setText(device.Name);
+                tvManufacturer.setText(device.Manufacturer);
+                tvManufacturerURL.setText(device.ManufacturerURL);
+                tvModelDescription.setText(device.ModelDescription);
+                tvModelName.setText(device.ModelName);
+                tvModelNumber.setText(device.ModelNumber);
+                tvPresentationURL.setText(device.PresentationURL);
             }
-            tvName.setText(device.Name);
-            tvManufacturer.setText(device.Manufacturer);
-            tvManufacturerURL.setText(device.ManufacturerURL);
-            tvModelDescription.setText(device.ModelDescription);
-            tvModelName.setText(device.ModelName);
-            tvModelNumber.setText(device.ModelNumber);
-            tvPresentationURL.setText(device.PresentationURL);
         }
     }
 
@@ -214,108 +218,13 @@ public class MainActivity extends AppCompatActivity {
                 Document doc = db.parse(new InputSource(conn.getInputStream()));
                 doc.getDocumentElement().normalize();
 
-                NodeList nodeList = doc.getElementsByTagName("device");
-
-                if (nodeList == null) {
+                if(device.setFields(doc) == false) {
                     continue;
                 }
-
-                Node node = nodeList.item(0);
-
-                Element fstElmnt = (Element) node;
-
-                NodeList itemList = fstElmnt.getElementsByTagName("friendlyName");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                Element elem = (Element) itemList.item(0);
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.Name = "Name: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("manufacturer");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.Manufacturer = "Manufacturer: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("manufacturerURL");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-                itemList = elem.getChildNodes();
-                device.ManufacturerURL = "ManufacturerURL: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("modelDescription");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.ModelDescription = "ModelDescription: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("modelName");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.ModelName = "ModelName: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("modelNumber");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.ModelNumber = "ModelNumber: " + ((Node) itemList.item(0)).getNodeValue();
-
-                itemList = fstElmnt.getElementsByTagName("presentationURL");
-
-                if (itemList == null) {
-                    continue;
-                }
-
-                elem = (Element) itemList.item(0);
-                if (elem == null) {
-                    continue;
-                }
-                itemList = elem.getChildNodes();
-                device.PresentationURL = "PresentationURL: " + ((Node) itemList.item(0)).getNodeValue();
 
                 clientSocket.close();
 
-                return msg;
+                return "Found";
             }
         } catch (IOException e) {
             e.printStackTrace();
